@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokémon TCG Card Price Updater</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Pokémon TCG Card Price Updater</h1>
+    <p>
+      Upload a vendor inventory spreadsheet (.csv) to fetch current market
+      prices and apply condition-based adjustments.
+    </p>
+  </header>
+
+  <main>
+    <section id="upload-section">
+      <label for="file-input" class="file-label">Choose inventory spreadsheet (.csv)</label>
+      <input type="file" id="file-input" accept=".csv" />
+      <p id="status-message" role="status"></p>
+    </section>
+
+    <section id="results-section">
+      <div class="results-header">
+        <h2>Results</h2>
+        <button id="download-button" disabled>Download Updated Spreadsheet</button>
+      </div>
+
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>Card Name</th>
+            <th>Set</th>
+            <th>Card Code</th>
+            <th>Condition</th>
+            <th>Finish</th>
+            <th>Old Price</th>
+            <th>New Price</th>
+            <th>Match Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

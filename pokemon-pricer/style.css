@@ -1,0 +1,148 @@
+/* Minimal, readable styling — no framework, no build step. */
+
+:root {
+  --color-bg: #f7f7f8;
+  --color-surface: #ffffff;
+  --color-border: #ddd;
+  --color-text: #222;
+  --color-muted: #666;
+  --color-primary: #2b6cb0;
+  --color-success: #2f855a;
+  --color-warning: #b7791f;
+  --color-error: #c53030;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+header {
+  padding: 2rem 1.5rem 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+header h1 {
+  margin-bottom: 0.25rem;
+}
+
+header p {
+  color: var(--color-muted);
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+
+#upload-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.file-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+#status-message {
+  margin-top: 0.75rem;
+  color: var(--color-muted);
+  min-height: 1.25rem;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+#results-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#results-table th,
+#results-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+#results-table th {
+  background: #edf2f7;
+  font-weight: 600;
+}
+
+/* Row tinting by match status, applied via the status-* class set in main.js */
+tr.status-matched td {
+  color: var(--color-success);
+}
+
+tr.status-no-match td,
+tr.status-error td {
+  color: var(--color-error);
+}
+
+tr.status-no-price td {
+  color: var(--color-warning);
+}
+
+/* Only tint the status column text color strongly; keep other cells neutral. */
+#results-table td {
+  color: var(--color-text);
+}
+
+#results-table tr.status-no-match td:last-child,
+tr.status-error td:last-child {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+tr.status-no-price td:last-child {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+tr.status-matched td:last-child {
+  color: var(--color-success);
+  font-weight: 600;
+}
