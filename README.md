@@ -10,7 +10,7 @@ your inventory system.
 
 ## Structure
 
-- `pokemon-pricer/` — the static frontend (upload, table, CSV parsing/export).
+- `index.html`, `main.js`, `parser.js`, `fetcher.js`, `pricer.js`, `style.css` — the static frontend (upload, table, CSV parsing/export).
 - `api/card.js` — a Vercel serverless function that proxies card lookups to
   the Pokémon TCG API, keeping the API key server-side.
 

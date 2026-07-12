@@ -20,11 +20,11 @@ const PRICE_KEY_PRIORITY = [
   "unlimited",
 ];
 
-// Builds the search query URL for a given card name and set name.
-// Both values are quoted so the API matches them as exact phrases.
+// Builds the search query URL for a given card name and set name, using
+// the proxy's own params (name, set) rather than pokemontcg.io's raw
+// Lucene "q" syntax — the proxy (api/card.js) builds that query itself.
 function buildSearchUrl(cardName, setName) {
-  const query = `name:"${cardName}" set.name:"${setName}"`;
-  const params = new URLSearchParams({ q: query });
+  const params = new URLSearchParams({ name: cardName, set: setName });
   return `${API_BASE_URL}?${params.toString()}`;
 }
 
