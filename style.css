@@ -1,15 +1,15 @@
 /* Minimal, readable styling — no framework, no build step. */
 
 :root {
-  --color-bg: #f7f7f8;
-  --color-surface: #ffffff;
-  --color-border: #ddd;
-  --color-text: #222;
-  --color-muted: #666;
-  --color-primary: #2b6cb0;
-  --color-success: #2f855a;
-  --color-warning: #b7791f;
-  --color-error: #c53030;
+  --color-bg: #16181d;
+  --color-surface: #1e2128;
+  --color-border: #2f333c;
+  --color-text: #e8e9ec;
+  --color-muted: #9aa0ab;
+  --color-primary: #5b7fdb;
+  --color-success: #48bb78;
+  --color-warning: #d69e2e;
+  --color-error: #e05353;
 }
 
 * {
@@ -108,7 +108,7 @@ button:hover:not(:disabled) {
 }
 
 #results-table th {
-  background: #edf2f7;
+  background: #262a32;
   font-weight: 600;
 }
 
