@@ -10,6 +10,16 @@ const API_BASE_URL = "/api/card";
 // can't stall the whole inventory run.
 const SEARCH_TIMEOUT_MS = 8000;
 
+// api.pokemontcg.io is flaky under load (timeouts, stray 404/5xx on valid
+// queries), so a search gets a few attempts with backoff before we give up
+// and report the row as failed.
+const MAX_SEARCH_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 750;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // The inventory sheet has no "finish" column, so we don't know up front
 // whether a card is normal/holo/reverse holo/etc. Instead, once we find
 // the matching card, we try its TCGplayer price finishes in this priority
@@ -103,6 +113,20 @@ async function searchCards(url) {
   return { matches: body.data };
 }
 
+// Wraps searchCards with a few retries (with backoff) before giving up,
+// since a single timeout/404/5xx from the upstream API is often transient.
+async function searchCardsWithRetry(url) {
+  let result;
+  for (let attempt = 1; attempt <= MAX_SEARCH_ATTEMPTS; attempt++) {
+    result = await searchCards(url);
+    if (!result.error) return result;
+    if (attempt < MAX_SEARCH_ATTEMPTS) {
+      await sleep(RETRY_DELAY_MS * attempt);
+    }
+  }
+  return result;
+}
+
 // Fetches the best-matching card for a given name/set/card code and
 // returns its TCGplayer market price (trying finishes in priority order).
 // Falls back to a set+number-only search if the name+set search finds
@@ -114,12 +138,12 @@ async function searchCards(url) {
 //   { status: "no-price" }                -> card found, but no price for any finish
 //   { status: "error", message }          -> network/API failure
 export async function fetchCardMarketPrice(cardName, setName, cardCode) {
-  let { matches, error } = await searchCards(buildSearchUrl(cardName, setName));
+  let { matches, error } = await searchCardsWithRetry(buildSearchUrl(cardName, setName));
   if (error) return error;
 
   const cardNumber = extractCardNumber(cardCode);
   if ((!matches || matches.length === 0) && cardNumber) {
-    ({ matches, error } = await searchCards(buildNumberSearchUrl(setName, cardNumber)));
+    ({ matches, error } = await searchCardsWithRetry(buildNumberSearchUrl(setName, cardNumber)));
     if (error) return error;
   }
 
