@@ -13,12 +13,15 @@ export default async function handler(request, response) {
 
   const { name, set, number } = request.query;
 
-  if (!name || !set) {
-    response.status(400).json({ error: "Missing required query params: name, set" });
+  if (!set || (!name && !number)) {
+    response.status(400).json({ error: "Missing required query params: set, and either name or number" });
     return;
   }
 
-  const queryParts = [`name:"${name}"`, `set.name:"${set}"`];
+  const queryParts = [`set.name:"${set}"`];
+  if (name) {
+    queryParts.push(`name:"${name}"`);
+  }
   if (number) {
     queryParts.push(`number:"${number}"`);
   }

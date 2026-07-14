@@ -28,6 +28,14 @@ function buildSearchUrl(cardName, setName) {
   return `${API_BASE_URL}?${params.toString()}`;
 }
 
+// Fallback for when name+set turns up nothing: vendor sheets sometimes use
+// a card name that doesn't match the API's name (e.g. a promo/variant
+// naming quirk), but the set + card number still pins down the exact card.
+function buildNumberSearchUrl(setName, cardNumber) {
+  const params = new URLSearchParams({ set: setName, number: cardNumber });
+  return `${API_BASE_URL}?${params.toString()}`;
+}
+
 // "103/106" -> "103". Card codes in the sheet are "<number>/<set size>";
 // the API's own `number` field is just the first part, so this lets us
 // disambiguate between multiple printings that share a name/set.
@@ -64,30 +72,43 @@ function pickMarketPrice(card) {
   return { price: undefined, finish: undefined };
 }
 
-// Fetches the best-matching card for a given name/set/card code and
-// returns its TCGplayer market price (trying finishes in priority order).
-//
-// Returns an object describing the outcome:
-//   { status: "matched", marketPrice: number, finish, card }
-//   { status: "no-match" }               -> no card found for name/set
-//   { status: "no-price" }                -> card found, but no price for any finish
-//   { status: "error", message }          -> network/API failure
-export async function fetchCardMarketPrice(cardName, setName, cardCode) {
-  const url = buildSearchUrl(cardName, setName);
-
+// Runs a search against the proxy and returns either { matches } or
+// { error } shaped as a fetchCardMarketPrice failure outcome.
+async function searchCards(url) {
   let response;
   try {
     response = await fetch(url);
   } catch (networkError) {
-    return { status: "error", message: `Network error: ${networkError.message}` };
+    return { error: { status: "error", message: `Network error: ${networkError.message}` } };
   }
 
   if (!response.ok) {
-    return { status: "error", message: `API returned ${response.status}` };
+    return { error: { status: "error", message: `API returned ${response.status}` } };
   }
 
   const body = await response.json();
-  const matches = body.data;
+  return { matches: body.data };
+}
+
+// Fetches the best-matching card for a given name/set/card code and
+// returns its TCGplayer market price (trying finishes in priority order).
+// Falls back to a set+number-only search if the name+set search finds
+// nothing (vendor names don't always match the API's card name).
+//
+// Returns an object describing the outcome:
+//   { status: "matched", marketPrice: number, finish, card }
+//   { status: "no-match" }               -> no card found for name/set/number
+//   { status: "no-price" }                -> card found, but no price for any finish
+//   { status: "error", message }          -> network/API failure
+export async function fetchCardMarketPrice(cardName, setName, cardCode) {
+  let { matches, error } = await searchCards(buildSearchUrl(cardName, setName));
+  if (error) return error;
+
+  const cardNumber = extractCardNumber(cardCode);
+  if ((!matches || matches.length === 0) && cardNumber) {
+    ({ matches, error } = await searchCards(buildNumberSearchUrl(setName, cardNumber)));
+    if (error) return error;
+  }
 
   if (!matches || matches.length === 0) {
     return { status: "no-match" };
