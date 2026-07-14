@@ -6,6 +6,10 @@
 
 const API_BASE_URL = "/api/card";
 
+// Give up on a single search call after this long so one slow/hung request
+// can't stall the whole inventory run.
+const SEARCH_TIMEOUT_MS = 8000;
+
 // The inventory sheet has no "finish" column, so we don't know up front
 // whether a card is normal/holo/reverse holo/etc. Instead, once we find
 // the matching card, we try its TCGplayer price finishes in this priority
@@ -73,13 +77,22 @@ function pickMarketPrice(card) {
 }
 
 // Runs a search against the proxy and returns either { matches } or
-// { error } shaped as a fetchCardMarketPrice failure outcome.
+// { error } shaped as a fetchCardMarketPrice failure outcome. Aborts and
+// reports a timeout error if the call takes longer than SEARCH_TIMEOUT_MS.
 async function searchCards(url) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), SEARCH_TIMEOUT_MS);
+
   let response;
   try {
-    response = await fetch(url);
+    response = await fetch(url, { signal: controller.signal });
   } catch (networkError) {
+    if (networkError.name === "AbortError") {
+      return { error: { status: "error", message: `Timed out after ${SEARCH_TIMEOUT_MS / 1000}s` } };
+    }
     return { error: { status: "error", message: `Network error: ${networkError.message}` } };
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {
